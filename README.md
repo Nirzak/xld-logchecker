@@ -21,6 +21,8 @@ This Go port is a complete re-implementation of the XLD log signing algorithm, r
 go install github.com/Nirzak/xld-logchecker/cmd/xld-logchecker@latest
 ```
 
+Or download the latest binary from [Releases](https://github.com/Nirzak/xld-logchecker/releases).
+
 ### Go Package
 ```bash
 go get github.com/Nirzak/xld-logchecker
