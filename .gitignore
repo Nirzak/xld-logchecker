@@ -1,5 +1,14 @@
-*.pyc
-.DS_Store
-*.egg-info/
-build/
+# Go binaries
+xld-logchecker
+!xld-logchecker/
+*.exe
+*.out
+
+# Go build/test cache
 dist/
+
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
