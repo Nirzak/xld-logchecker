@@ -1,34 +1,73 @@
-# XLD Logchecker
+# XLD Logchecker (Go)
 
-![Travis-CI Status](https://img.shields.io/travis/com/OPSnet/xld_logchecker.py/master.svg) 
-![PyPI](https://img.shields.io/pypi/v/xld_logchecker.svg)
+A Go port of the [XLD Logchecker](https://github.com/OPSnet/xld_logchecker.py) project. This package provides verification of cryptographic signatures embedded in X Lossless Decoder (XLD) log files. 
 
-This is a fork of https://github.com/puddly/xld_logsigner, to be used within our 
-downstream applications, removing unnecessary functionality that we do not need. 
+It acts as both a standalone CLI tool and an importable Go package for downstream applications.
 
-Based heavily on [barrybingo/xld_sign](https://github.com/barrybingo/xld_sign).
-This is a complete disassembly of the XLD log signing algorithm, re-implemented in
-Python 3.5+.
+## Overview
 
-# Usage
+XLD logs are verified by checking an embedded signature against a computed signature. The algorithm operates as follows:
+1. The unsigned log text is hashed using a custom SHA-256 variant with a modified initial state.
+2. The hex-encoded digest has `\nVersion=0001` appended to it.
+3. The resulting string is passed through a proprietary block-scrambling algorithm that operates on 8-byte chunks.
+4. The output is encoded using a non-standard base64 alphabet (with no padding).
 
-    usage: xld.py [-h] (--verify | --sign) FILE
+This Go port is a complete re-implementation of the XLD log signing algorithm, requiring zero external dependencies.
 
-    Verifies and resigns XLD logs
+## Installation
 
-    positional arguments:
-      FILE        path to the log file
+### CLI Tool
+```bash
+go install github.com/Nirzak/xld-logchecker/cmd/xld-logchecker@latest
+```
 
-    optional arguments:
-      -h, --help  show this help message and exit
-      --verify    verify a log
-      --sign      sign or fix an existing log
+### Go Package
+```bash
+go get github.com/Nirzak/xld-logchecker
+```
 
-# Overview
+## Usage
 
-The final code isn't pretty, but it is simple enough to describe the algorithm.
+### Command Line
+```bash
+usage: xld-logchecker [--json] [--version] <file>
 
- 1. The log is encoded as UTF-8 and hashed with a SHA-256 variant that uses a different IV.
- 2. The digest is converted to hex and the string `\nVersion=0001` is appended onto the end.
- 3. The versioned hex-digest is then passed through an unidentified scrambling function that operates on pairs of bytes (open an issue if you recognize it).
- 4. The resulting bytestring is then encoded using a 65-character lookup table with a strange mapping.
+Verifies XLD log files.
+
+positional arguments:
+  file        path to the log file
+
+optional arguments:
+  --json      Output result as a JSON object
+  --version   Print version and exit
+```
+
+Exit Codes:
+- `0` - Valid signature
+- `1` - Invalid signature (Malformed, Forged) or file error (Not a logfile)
+
+### Go Library
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/Nirzak/xld-logchecker/xldlogchecker"
+)
+
+func main() {
+    // From a file
+    result := xldlogchecker.ParseLog("path/to/log.txt")
+    fmt.Printf("Status: %s, Message: %s\n", result.Status, result.Message)
+
+    // From in-memory content
+    rawText := "X Lossless Decoder version..."
+    result2 := xldlogchecker.VerifyContent(rawText)
+    fmt.Printf("Status: %s, Message: %s\n", result2.Status, result2.Message)
+}
+```
+
+The `Result` struct matches the output format of the original Python tool:
+- `Status`: `"OK"`, `"BAD"`, or `"ERROR"`
+- `Message`: `"OK"`, `"Malformed"`, `"Forged"`, `"Not a logfile"`, or `"error: cannot open file"`
