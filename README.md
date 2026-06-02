@@ -4,6 +4,8 @@ A Go port of the [XLD Logchecker](https://github.com/OPSnet/xld_logchecker.py) p
 
 It acts as both a standalone CLI tool and an importable Go package for downstream applications.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/Nirzak/xld-logchecker.svg)](https://pkg.go.dev/github.com/Nirzak/xld-logchecker)
+
 ## Overview
 
 XLD logs are verified by checking an embedded signature against a computed signature. The algorithm operates as follows:
